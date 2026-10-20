@@ -135,7 +135,7 @@ export function downloadStudentResultPDF(result: ExamResult): void {
   y += 8;
 
   // Baris-baris tabel
-  const totalQuestionsCount = (result.benar || 0) + (result.salah || 0) > 0 ? (result.benar || 0) + (result.salah || 0) : 30;
+  const totalQuestionsCount = (result.benar || 0) + (result.salah || 0) > 0 ? (result.benar || 0) + (result.salah || 0) : 35;
   const tableRows = [
     { label: 'Jumlah Soal Keseluruhan', value: `${totalQuestionsCount} Butir Soal` },
     { label: 'Jumlah Jawaban Benar', value: `${result.benar} Soal` },
@@ -321,6 +321,7 @@ export function downloadExamQuestionsPDF(questions: Question[]): void {
     let typeLabel = 'Pilihan Ganda';
     if (q.type === 'pgk') typeLabel = 'Pilihan Ganda Kompleks (Bisa >1 jawaban benar)';
     if (q.type === 'pgk_kategori') typeLabel = 'Pilihan Ganda Kompleks Kategori (Benar / Salah)';
+    if (q.type === 'isian') typeLabel = 'Isian Singkat';
 
     doc.setTextColor(30, 58, 138);
     doc.text(`Soal No. ${idx + 1} [${typeLabel}]`, 15, y);
@@ -368,6 +369,14 @@ export function downloadExamQuestionsPDF(questions: Question[]): void {
         y += stLines.length * 4.5 + 1.5;
       });
       y += 3;
+    }
+
+    // Garis Jawaban Isian Singkat
+    if (q.type === 'isian') {
+      checkPageBreak(8);
+      doc.setFont('helvetica', 'normal');
+      doc.text('Jawaban Singkat: .................................................................................', 20, y);
+      y += 6;
     }
   });
 

@@ -102,10 +102,13 @@ export const Stage2Exam: React.FC<Stage2ExamProps> = ({
     if (q.type === 'pgk') {
       return Array.isArray(ans) && ans.length > 0;
     }
+    if (q.type === 'isian') {
+      return typeof ans === 'string' && ans.trim().length > 0;
+    }
     if (q.type === 'pgk_kategori') {
       if (typeof ans === 'object' && !Array.isArray(ans)) {
         const statements = q.statements || [];
-        return statements.every((st) => ans[st.id] !== undefined);
+        return statements.length > 0 && statements.every((st) => ans[st.id] !== undefined);
       }
       return false;
     }
@@ -165,6 +168,14 @@ export const Stage2Exam: React.FC<Stage2ExamProps> = ({
     });
   };
 
+  // Handler jawaban Isian Singkat
+  const handleSetIsian = (value: string) => {
+    setAnswers((prev) => ({
+      ...prev,
+      [currentIndex]: value,
+    }));
+  };
+
   // Navigasi soal
   const handlePrev = () => {
     if (currentIndex > 0) setCurrentIndex(currentIndex - 1);
@@ -204,6 +215,16 @@ export const Stage2Exam: React.FC<Stage2ExamProps> = ({
           correctTexts.every((txt) => userSelected.includes(txt));
 
         if (isMatch) {
+          totalScore += 1;
+          benarCount += 1;
+        }
+      } else if (sq.type === 'isian') {
+        // Jawaban Isian Singkat (toleransi huruf besar/kecil & spasi)
+        const userStr = typeof userAns === 'string' ? userAns.trim().toLowerCase() : '';
+        const correctStr = typeof origQ.correctAnswer === 'string' ? origQ.correctAnswer.trim().toLowerCase() : '';
+        const accepted = (origQ.acceptedAnswers || [correctStr]).map((a) => a.trim().toLowerCase());
+
+        if (userStr && (userStr === correctStr || accepted.includes(userStr))) {
           totalScore += 1;
           benarCount += 1;
         }
@@ -358,6 +379,7 @@ export const Stage2Exam: React.FC<Stage2ExamProps> = ({
                     {currentQ.type === 'pg' && 'Pilihan Ganda'}
                     {currentQ.type === 'pgk' && 'Pilihan Ganda Kompleks'}
                     {currentQ.type === 'pgk_kategori' && 'PGK Kategori (Benar / Salah)'}
+                    {currentQ.type === 'isian' && 'Isian Singkat'}
                   </span>
                 </div>
                 <span className="text-xs font-medium text-slate-500">
@@ -370,6 +392,7 @@ export const Stage2Exam: React.FC<Stage2ExamProps> = ({
                 {currentQ.type === 'pg' && 'Pilihlah salah satu jawaban yang paling tepat.'}
                 {currentQ.type === 'pgk' && 'Pilihlah seluruh pernyataan yang bernilai benar (bisa lebih dari satu).'}
                 {currentQ.type === 'pgk_kategori' && 'Tentukan pilihan Benar atau Salah untuk setiap pernyataan di bawah ini.'}
+                {currentQ.type === 'isian' && 'Ketikkan jawaban singkat dan tepat pada kolom di bawah ini.'}
               </div>
 
               {/* Ilustrasi Gambar Soal (Jika Tersedia) */}
@@ -516,6 +539,29 @@ export const Stage2Exam: React.FC<Stage2ExamProps> = ({
                   })}
                 </div>
               )}
+
+              {/* Tampilan Input Jawaban: Isian Singkat */}
+              {currentQ.type === 'isian' && (
+                <div className="space-y-3">
+                  <label htmlFor="input-jawaban-isian" className="block text-xs font-bold text-slate-700">
+                    Ketikkan Jawaban Anda:
+                  </label>
+                  <div className="relative">
+                    <input
+                      id="input-jawaban-isian"
+                      type="text"
+                      value={typeof answers[currentIndex] === 'string' ? (answers[currentIndex] as string) : ''}
+                      onChange={(e) => handleSetIsian(e.target.value)}
+                      placeholder="Ketikkan jawaban Anda di sini..."
+                      autoComplete="off"
+                      className="w-full px-4 py-3 sm:py-3.5 text-sm sm:text-base rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white font-medium text-slate-900 shadow-xs placeholder:text-slate-400"
+                    />
+                  </div>
+                  <p className="text-[11px] text-slate-500">
+                    Tuliskan kata atau frasa dengan ejaan yang tepat (huruf besar/kecil tidak mempengaruhi penilaian).
+                  </p>
+                </div>
+              )}
             </div>
 
             {/* Tombol Aksi Bawah: Sebelumnya & Berikutnya */}
@@ -561,7 +607,7 @@ export const Stage2Exam: React.FC<Stage2ExamProps> = ({
           <div className="bg-white rounded-2xl p-5 shadow-xs border border-slate-200">
             <h4 className="text-xs font-bold uppercase tracking-wider text-slate-700 mb-3 flex items-center justify-between">
               <span>Nomor Soal Ujian</span>
-              <span className="text-[11px] font-normal text-slate-500">22 Butir</span>
+              <span className="text-[11px] font-normal text-slate-500">{totalQuestions} Butir</span>
             </h4>
 
             {/* Grid 22 Soal */}

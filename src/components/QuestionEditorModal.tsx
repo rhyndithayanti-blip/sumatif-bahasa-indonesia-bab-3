@@ -32,6 +32,14 @@ export const QuestionEditorModal: React.FC<QuestionEditorModalProps> = ({
     question.correctAnswer || (question.type === 'pgk' ? [] : 'A')
   );
 
+  // State untuk isian singkat
+  const [isianAnswer, setIsianAnswer] = useState<string>(
+    typeof question.correctAnswer === 'string' ? question.correctAnswer : ''
+  );
+  const [acceptedAnswersStr, setAcceptedAnswersStr] = useState<string>(
+    question.acceptedAnswers ? question.acceptedAnswers.join(', ') : ''
+  );
+
   // State untuk statements (PGK Kategori)
   const [statements, setStatements] = useState<StatementItem[]>(
     question.statements ? JSON.parse(JSON.stringify(question.statements)) : []
@@ -67,15 +75,28 @@ export const QuestionEditorModal: React.FC<QuestionEditorModalProps> = ({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
+    const isIsian = question.type === 'isian';
+    const parsedAccepted = isIsian
+      ? acceptedAnswersStr
+          .split(',')
+          .map((s) => s.trim().toLowerCase())
+          .filter(Boolean)
+      : undefined;
+
     const updated: Question = {
       ...question,
       text: text.trim(),
       topic: topic.trim(),
       difficulty,
       explanation: explanation.trim(),
-      options: question.type !== 'pgk_kategori' ? options : undefined,
+      options: question.type === 'pg' || question.type === 'pgk' ? options : undefined,
       statements: question.type === 'pgk_kategori' ? statements : undefined,
-      correctAnswer: question.type !== 'pgk_kategori' ? correctAnswer : undefined,
+      correctAnswer: isIsian
+        ? isianAnswer.trim().toLowerCase()
+        : question.type !== 'pgk_kategori'
+        ? correctAnswer
+        : undefined,
+      acceptedAnswers: parsedAccepted && parsedAccepted.length > 0 ? parsedAccepted : undefined,
     };
 
     onSave(updated);
@@ -275,6 +296,40 @@ export const QuestionEditorModal: React.FC<QuestionEditorModalProps> = ({
                   />
                 </div>
               ))}
+            </div>
+          )}
+
+          {/* Opsi Kunci Jawaban untuk Isian Singkat */}
+          {question.type === 'isian' && (
+            <div className="space-y-3 p-3.5 rounded-xl bg-slate-50 border border-slate-200">
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">
+                  Kunci Jawaban Isian Singkat (Kata Utama)
+                </label>
+                <input
+                  type="text"
+                  value={isianAnswer}
+                  onChange={(e) => setIsianAnswer(e.target.value)}
+                  placeholder="Contoh: larangan"
+                  className="w-full px-3 py-2 rounded-lg border border-slate-300 text-xs font-bold focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">
+                  Variasi Jawaban yang Diterima (Pisahkan dengan koma)
+                </label>
+                <input
+                  type="text"
+                  value={acceptedAnswersStr}
+                  onChange={(e) => setAcceptedAnswersStr(e.target.value)}
+                  placeholder="Contoh: larangan, rambu larangan"
+                  className="w-full px-3 py-2 rounded-lg border border-slate-300 text-xs font-medium focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                />
+                <span className="text-[11px] text-slate-400 mt-1 block">
+                  Siswa yang mengetikkan salah satu kata di atas akan dihitung benar (huruf besar/kecil diabaikan).
+                </span>
+              </div>
             </div>
           )}
 

@@ -587,4 +587,74 @@ export const INITIAL_QUESTIONS: Question[] = [
     explanation:
       'Pernyataan 1 BENAR (teks menyajikan perincian fisik objek bangunan secara jelas). Pernyataan 2 SALAH (teks di atas adalah teks deskripsi yang menggambarkan keindahan rumah, bukan teks persuasi/iklan promosi penjualan komersial). Pernyataan 3 BENAR (merasakan angin sejuk menggunakan indra peraba/kulit).',
   },
+
+  // =========================================================================
+  // BAGIAN 3: ISIAN SINGKAT (5 SOAL: NO. 31 - 35)
+  // Siswa mengetikkan jawaban singkat berupa kata atau frasa yang tepat
+  // =========================================================================
+
+  // --- SOAL 31: RAMBU-RAMBU LALU LINTAS (ISIAN SINGKAT) ---
+  {
+    id: 31,
+    type: 'isian',
+    topic: 'Rambu-Rambu Lalu Lintas',
+    difficulty: 'Mudah',
+    text: 'Rambu lalu lintas yang berbentuk lingkaran dengan warna dasar putih, garis tepi merah, dan garis palang merah melintang merupakan jenis rambu...',
+    correctAnswer: 'larangan',
+    acceptedAnswers: ['larangan', 'rambu larangan'],
+    explanation:
+      'Rambu berbentuk lingkaran berlatar putih dengan bingkai dan coretan diagonal berwarna merah adalah jenis rambu larangan (misalnya dilarang parkir, dilarang berhenti, dilarang masuk).',
+  },
+
+  // --- SOAL 32: AWALAN BER- (ISIAN SINGKAT) ---
+  {
+    id: 32,
+    type: 'isian',
+    topic: 'Awalan Ber-',
+    difficulty: 'Mudah',
+    text: 'Kata dasar "ajar" apabila digabungkan dengan awalan ber- mengalami perubahan bentuk khusus (alomorf) menjadi kata...',
+    correctAnswer: 'belajar',
+    acceptedAnswers: ['belajar'],
+    explanation:
+      'Awalan ber- yang dilekatkan pada kata dasar "ajar" mengalami perubahan bentuk menjadi "bel-" sehingga kata bentukan yang baku adalah "belajar".',
+  },
+
+  // --- SOAL 33: PETUNJUK ARAH DAN DENAH (ISIAN SINGKAT) ---
+  {
+    id: 33,
+    type: 'isian',
+    topic: 'Petunjuk Arah dan Denah',
+    difficulty: 'Mudah',
+    text: 'Pada kompas arah mata angin, arah yang terletak tepat berlawanan dengan arah Barat adalah arah...',
+    correctAnswer: 'timur',
+    acceptedAnswers: ['timur', 'arah timur'],
+    explanation:
+      'Arah Barat berada di sisi kiri (270°), sedangkan arah yang berlawanan langsung (180° dari arah barat) adalah arah Timur yang berada di sisi kanan (90°).',
+  },
+
+  // --- SOAL 34: TEKS ARGUMENTASI (ISIAN SINGKAT) ---
+  {
+    id: 34,
+    type: 'isian',
+    topic: 'Teks Argumentasi',
+    difficulty: 'Sedang',
+    text: 'Dalam teks argumentasi, pernyataan atau keterangan yang didukung oleh data nyata dan dapat dibuktikan kebenarannya secara objektif disebut...',
+    correctAnswer: 'fakta',
+    acceptedAnswers: ['fakta', 'kalimat fakta', 'data fakta'],
+    explanation:
+      'Fakta adalah hal atau peristiwa yang benar-benar nyata terjadi dan dapat dibuktikan kebenarannya. Dalam teks argumentasi, fakta berfungsi sebagai bukti kuat untuk memperkuat opini penulis.',
+  },
+
+  // --- SOAL 35: TEKS DESKRIPSI (ISIAN SINGKAT) ---
+  {
+    id: 35,
+    type: 'isian',
+    topic: 'Teks Deskripsi',
+    difficulty: 'Sedang',
+    text: 'Pancaindra manusia yang digunakan untuk mencerap dan menggambarkan wangi aroma rempah-rempah yang semerbak dalam teks deskripsi adalah indra...',
+    correctAnswer: 'penciuman',
+    acceptedAnswers: ['penciuman', 'indra penciuman', 'hidung', 'indra pembau', 'pembau'],
+    explanation:
+      'Pencerapan wangi, aroma sedap, maupun bau dalam teks deskripsi memanfaatkan fungsi pancaindra penciuman (hidung).',
+  },
 ];

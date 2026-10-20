@@ -49,7 +49,7 @@ export const Stage1Identity: React.FC<Stage1IdentityProps> = ({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Validasi data wajib diisi
+    // Validasi data wajib diisi (Nama Lengkap & No Absen)
     if (!nama.trim()) {
       setErrorMessage('Silakan isi Nama Lengkap terlebih dahulu.');
       return;
@@ -58,16 +58,12 @@ export const Stage1Identity: React.FC<Stage1IdentityProps> = ({
       setErrorMessage('Silakan isi Nomor Absen.');
       return;
     }
-    if (!hari || !bulan || !tahun) {
-      setErrorMessage('Silakan lengkapi data Tanggal Lahir (Hari, Bulan, dan Tahun).');
-      return;
-    }
 
     setErrorMessage('');
     onStartExam({
       nama: nama.trim(),
       noAbsen: noAbsen.trim(),
-      tglLahir: { hari, bulan, tahun },
+      tglLahir: hari && bulan && tahun ? { hari, bulan, tahun } : undefined,
     });
   };
 
@@ -261,9 +257,13 @@ export const Stage1Identity: React.FC<Stage1IdentityProps> = ({
                 <span>2. PGK Kategori (Benar / Salah)</span>
                 <span className="font-bold text-amber-300">5 Butir (3 respon/soal)</span>
               </div>
+              <div className="flex items-center justify-between bg-slate-800/80 p-2.5 rounded-lg border border-slate-700">
+                <span>3. Isian Singkat</span>
+                <span className="font-bold text-emerald-300">5 Butir</span>
+              </div>
               <div className="flex items-center justify-between pt-2 border-t border-slate-800 text-slate-300">
                 <span>Total Butir Soal:</span>
-                <span className="font-extrabold text-white text-sm">30 Soal</span>
+                <span className="font-extrabold text-white text-sm">35 Soal</span>
               </div>
             </div>
 
@@ -274,7 +274,7 @@ export const Stage1Identity: React.FC<Stage1IdentityProps> = ({
               </p>
               <p className="flex items-start gap-1.5">
                 <CheckCircle2 className="w-3.5 h-3.5 text-blue-400 shrink-0 mt-0.5" />
-                <span>Seluruh 30 soal wajib dijawab sebelum jawaban dapat dikirimkan ke server.</span>
+                <span>Seluruh 35 soal wajib dijawab sebelum jawaban dapat dikirimkan ke server.</span>
               </p>
             </div>
           </div>
