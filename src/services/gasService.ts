@@ -16,10 +16,11 @@ export const gasService = {
     try {
       const custom = localStorage.getItem(STORAGE_CUSTOM_GAS_URL_KEY);
       if (custom && custom.trim().startsWith('http')) {
-        // Jika URL tersimpan adalah URL versi lama, perbarui ke URL aktif
+        // Jika URL tersimpan adalah URL versi lama, perbarui ke URL aktif bawaan baru
         if (
           custom.includes('AKfycbzBuJrheUE3MRAvNlUEZut3q0LQL5-J62sy8w_rfsBz72VJGt7IHyFPj0WORSB8dUCmeQ') ||
-          custom.includes('AKfycbx6Bki20asJdxZX-I6kmXwGIyd6pOApUMTD-92t7rFVdIuYH86ApVatKYEsBbZYttJSng')
+          custom.includes('AKfycbx6Bki20asJdxZX-I6kmXwGIyd6pOApUMTD-92t7rFVdIuYH86ApVatKYEsBbZYttJSng') ||
+          custom.includes('AKfycbyN8cEOymxr-LSKg1lXBgJmEUfZhSnS_D3CsvkSsMpSV4Pg4iHKImXExkymIH4W7xKY')
         ) {
           localStorage.removeItem(STORAGE_CUSTOM_GAS_URL_KEY);
           return CONFIG.GOOGLE_APPS_SCRIPT_URL;
@@ -295,7 +296,7 @@ export const gasService = {
     }
 
     try {
-      const readUrl = `${url}${url.includes('?') ? '&' : '?'}action=read&t=${Date.now()}`;
+      const readUrl = `${url}${url.includes('?') ? '&' : '?'}action=read&mapel=${encodeURIComponent(CONFIG.MATA_PELAJARAN)}&t=${Date.now()}`;
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 7000);
 
@@ -393,6 +394,7 @@ export const gasService = {
       timestamp,
       nama,
       studentName: nama,
+      mataPelajaran: CONFIG.MATA_PELAJARAN,
     };
 
     try {
@@ -432,32 +434,73 @@ export const gasService = {
 };
 
 /**
- * Template Skrip Google Apps Script untuk Google Spreadsheet
+ * Template Skrip Google Apps Script untuk Google Spreadsheet Multi-Mapel
  */
 export const GAS_SCRIPT_TEMPLATE = `/**
- * SKRIP GOOGLE APPS SCRIPT UNTUK REKAP TES SUMATIF
- * SEKOLAH DASAR - JEMBRANA - KELAS VI
+ * SKRIP GOOGLE APPS SCRIPT UNTUK REKAP TES SUMATIF MULTI-MAPEL
+ * SD NEGERI 3 LOLOAN TIMUR - KELAS 4
+ *
+ * FITUR MULTI-MAPEL (1 SPREADSHEET UNTUK SEMUA APLIKASI WEB MAPEL):
+ * - Otomatis mendeteksi nama Mata Pelajaran dari setiap web ujian.
+ * - Otomatis membuatkan Tab/Sheet baru sesuai mapel (misal: "Bahasa Indonesia", "Matematika", "IPAS", dll).
+ * - Semua hasil ujian dari banyak web tersimpan rapi dalam 1 file Spreadsheet!
  *
  * PANDUAN PEMASANGAN (HANYA 2 MENIT):
- * 1. Buat Spreadsheet baru di https://sheets.new
- * 2. Beri nama: "Rekap Nilai Tes Sumatif Bahasa Indonesia SD Negeri 3 Loloan Timur"
- * 3. Buka menu "Ekstensi" -> "Apps Script"
- * 4. Hapus semua kode default, lalu salin dan tempel SELURUH KODE di bawah ini
- * 5. Klik "Simpan" (ikon disket)
- * 6. Klik tombol biru "Terapkan" (Deploy) -> "Penerapan Baru" (New Deployment)
- * 7. Pilih jenis: "Aplikasi Web" (Web App)
- * 8. PENGATURAN WAJIB:
+ * 1. Buka 1 file Google Spreadsheet di https://sheets.new
+ * 2. Klik menu "Ekstensi" (Extensions) -> "Apps Script"
+ * 3. Hapus semua kode default, salin & tempel SELURUH KODE di bawah ini
+ * 4. Klik ikon "Simpan" (Save)
+ * 5. Klik tombol biru "Terapkan" (Deploy) -> "Penerapan Baru" (New Deployment)
+ * 6. Pilih jenis: "Aplikasi Web" (Web App)
+ * 7. PENGATURAN WAJIB:
  *    - Jalankan sebagai (Execute as): "Saya" (Me)
  *    - Siapa yang memiliki akses (Who has access): "Siapa saja" (Anyone) -> SANGAT PENTING!
- * 9. Klik "Terapkan", berikan Otorisasi Akun Google Anda
- * 10. Salin URL Aplikasi Web (berakhiran /exec) dan tempelkan ke menu "Pengaturan URL Spreadsheet" di Panel Guru.
+ * 8. Klik "Terapkan" (Deploy), berikan Otorisasi Akun Google Anda
+ * 9. Salin URL Aplikasi Web (berakhiran /exec) dan tempelkan ke menu "Pengaturan URL Spreadsheet" di Panel Guru.
  */
+
+function getTargetSheet(ss, mapelName) {
+  var name = (mapelName || "Bahasa Indonesia").replace(/[/\\\\?*\\[\\]:]/g, "").trim().substring(0, 100);
+  if (!name) name = "Hasil_Tes";
+  
+  var sheet = ss.getSheetByName(name);
+  if (!sheet) {
+    sheet = ss.insertSheet(name);
+  }
+  
+  // Buat header jika lembar sheet masih kosong
+  if (sheet.getLastRow() === 0) {
+    sheet.appendRow([
+      "Timestamp",
+      "Nama",
+      "Kelas",
+      "Nomor Absen",
+      "Tanggal Lahir",
+      "Benar",
+      "Salah",
+      "Nilai",
+      "Status",
+      "Mata Pelajaran"
+    ]);
+  }
+  return sheet;
+}
 
 function doGet(e) {
   try {
-    var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
-    var data = sheet.getDataRange().getValues();
+    var ss = SpreadsheetApp.getActiveSpreadsheet();
+    var mapelParam = e && e.parameter && e.parameter.mapel ? e.parameter.mapel : "";
+    var sheet = null;
     
+    if (mapelParam) {
+      var safeName = mapelParam.replace(/[/\\\\?*\\[\\]:]/g, "").trim();
+      sheet = ss.getSheetByName(safeName);
+    }
+    if (!sheet) {
+      sheet = ss.getActiveSheet();
+    }
+    
+    var data = sheet.getDataRange().getValues();
     if (data.length <= 1) {
       return ContentService.createTextOutput(JSON.stringify({ success: true, data: [] }))
         .setMimeType(ContentService.MimeType.JSON);
@@ -465,7 +508,6 @@ function doGet(e) {
     
     var headers = data[0];
     var results = [];
-    
     for (var i = 1; i < data.length; i++) {
       var row = data[i];
       var item = {};
@@ -488,25 +530,11 @@ function doPost(e) {
   try {
     var raw = e.postData ? e.postData.contents : "{}";
     var contents = JSON.parse(raw);
-    var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
+    var ss = SpreadsheetApp.getActiveSpreadsheet();
+    var mataPelajaran = contents.mataPelajaran || "Bahasa Indonesia";
+    var sheet = getTargetSheet(ss, mataPelajaran);
     
-    // Inisialisasi Header jika sheet masih kosong
-    if (sheet.getLastRow() === 0) {
-      sheet.appendRow([
-        "Timestamp",
-        "Nama",
-        "Kelas",
-        "Nomor Absen",
-        "Tanggal Lahir",
-        "Benar",
-        "Salah",
-        "Nilai",
-        "Status",
-        "Mata Pelajaran"
-      ]);
-    }
-    
-    // Fitur Delete jika diminta
+    // Fitur Delete jika diminta dari panel guru
     if (contents.action === "delete") {
       var data = sheet.getDataRange().getValues();
       var targetTimestamp = String(contents.timestamp || "").trim();
@@ -525,17 +553,16 @@ function doPost(e) {
         .setMimeType(ContentService.MimeType.JSON);
     }
     
-    // Fitur Tambah / Simpan Hasil Tes Siswa
+    // Simpan Hasil Tes Siswa
     var timestamp = contents.timestamp || Utilities.formatDate(new Date(), "GMT+8", "dd/MM/yyyy HH:mm:ss");
     var nama = contents.studentName || contents.nama || "";
-    var kelas = contents.className || contents.kelas || "VI";
+    var kelas = contents.className || contents.kelas || "4";
     var noAbsen = contents.absenNumber || contents.noAbsen || "";
-    var tglLahir = contents.birthDate || contents.tglLahir || "";
+    var tglLahir = contents.birthDate || contents.tglLahir || "-";
     var benar = contents.correctCount !== undefined ? contents.correctCount : (contents.benar || 0);
     var salah = contents.incorrectCount !== undefined ? contents.incorrectCount : (contents.salah || 0);
     var nilai = contents.finalScore !== undefined ? contents.finalScore : (contents.nilai || 0);
-    var status = contents.status || (nilai >= 70 ? "Lulus" : "Belum Lulus");
-    var mataPelajaran = contents.mataPelajaran || "MATEMATIKA";
+    var status = contents.status || (nilai >= 60 ? "Lulus" : "Belum Lulus");
     
     sheet.appendRow([
       timestamp,
@@ -552,7 +579,7 @@ function doPost(e) {
     
     return ContentService.createTextOutput(JSON.stringify({
       success: true,
-      message: "Hasil tes siswa berhasil disimpan ke spreadsheet"
+      message: "Hasil tes berhasil disimpan ke tab " + sheet.getName()
     })).setMimeType(ContentService.MimeType.JSON);
   } catch (error) {
     return ContentService.createTextOutput(JSON.stringify({

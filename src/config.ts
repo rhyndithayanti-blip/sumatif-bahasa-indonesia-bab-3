@@ -18,5 +18,5 @@ export const CONFIG = {
   ADMIN_PASSWORD: "GURUADMIN",
   
   // Endpoint Google Apps Script Web App utama
-  GOOGLE_APPS_SCRIPT_URL: "https://script.google.com/macros/s/AKfycbyN8cEOymxr-LSKg1lXBgJmEUfZhSnS_D3CsvkSsMpSV4Pg4iHKImXExkymIH4W7xKY/exec",
+  GOOGLE_APPS_SCRIPT_URL: "https://script.google.com/macros/s/AKfycbz3ZEeh0hyisCYY89C1laGerFG5Opvi1bN98lehIlaQ4Y5xt9IGExado2RREqWZegzb/exec",
 };

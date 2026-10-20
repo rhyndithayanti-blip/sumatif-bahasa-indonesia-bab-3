@@ -63,13 +63,10 @@ export const GasGuideModal: React.FC<GasGuideModalProps> = ({ isOpen, onClose })
             </h4>
             <ol className="list-decimal list-inside space-y-2 text-xs leading-relaxed text-slate-600">
               <li>
-                Buka <strong className="text-slate-800">Google Spreadsheet</strong> baru di akun Google Anda.
+                Buka <strong className="text-slate-800">1 Google Spreadsheet</strong> di akun Google Anda (cukup 1 file untuk semua mata pelajaran).
               </li>
               <li>
-                Pada baris 1 (Header Sheet1), pastikan kolom diberi nama persis seperti berikut:
-                <div className="mt-1.5 p-2 bg-slate-100 rounded-lg font-mono text-[11px] text-slate-800 overflow-x-auto whitespace-nowrap">
-                  A1: Timestamp | B1: Nama | C1: Kelas | D1: Nomor Absen | E1: Tanggal Lahir | F1: Benar | G1: Salah | H1: Nilai | I1: Status | J1: Mata Pelajaran
-                </div>
+                <strong className="text-emerald-700">Fitur Multi-Mapel Otomatis:</strong> Skrip ini otomatis membuatkan tab/sheet terpisah untuk setiap mata pelajaran (misal: <em>Bahasa Indonesia</em>, <em>Matematika</em>, <em>IPAS</em>, dll) lengkap dengan kolom header tanpa perlu Anda buat manual!
               </li>
               <li>
                 Klik menu <strong className="text-slate-800">Ekstensi</strong> &gt; <strong className="text-slate-800">Apps Script</strong>.
