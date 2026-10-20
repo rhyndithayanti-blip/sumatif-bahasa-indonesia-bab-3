@@ -161,10 +161,10 @@ export const Stage1Identity: React.FC<Stage1IdentityProps> = ({
               </div>
             </div>
 
-            {/* Tanggal Lahir (Hari, Bulan, Tahun) */}
+            {/* Tanggal Lahir Siswa (Opsional) */}
             <div>
               <label className="block text-xs font-bold text-slate-700 mb-1.5">
-                Tanggal Lahir Siswa <span className="text-red-500">*</span>
+                Tanggal Lahir Siswa <span className="text-slate-400 font-normal">(Opsional)</span>
               </label>
               <div className="grid grid-cols-3 gap-2.5">
                 {/* Hari */}
@@ -174,7 +174,6 @@ export const Stage1Identity: React.FC<Stage1IdentityProps> = ({
                     value={hari}
                     onChange={(e) => setHari(e.target.value)}
                     className="w-full px-2.5 py-2.5 text-xs sm:text-sm rounded-xl border border-slate-300 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-800 font-medium"
-                    required
                   >
                     <option value="">Hari</option>
                     {days.map((d) => (
@@ -192,7 +191,6 @@ export const Stage1Identity: React.FC<Stage1IdentityProps> = ({
                     value={bulan}
                     onChange={(e) => setBulan(e.target.value)}
                     className="w-full px-2.5 py-2.5 text-xs sm:text-sm rounded-xl border border-slate-300 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-800 font-medium"
-                    required
                   >
                     <option value="">Bulan</option>
                     {BULAN_LIST.map((m) => (
@@ -210,7 +208,6 @@ export const Stage1Identity: React.FC<Stage1IdentityProps> = ({
                     value={tahun}
                     onChange={(e) => setTahun(e.target.value)}
                     className="w-full px-2.5 py-2.5 text-xs sm:text-sm rounded-xl border border-slate-300 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-800 font-medium"
-                    required
                   >
                     <option value="">Tahun</option>
                     {years.map((y) => (
@@ -222,7 +219,7 @@ export const Stage1Identity: React.FC<Stage1IdentityProps> = ({
                 </div>
               </div>
               <p className="mt-1 text-[11px] text-slate-400">
-                Pilih tanggal, bulan, dan tahun kelahiran Anda.
+                Pilih tanggal kelahiran Anda jika diperlukan, atau langsung klik Mulai Tes.
               </p>
             </div>
 

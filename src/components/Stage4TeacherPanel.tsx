@@ -39,6 +39,7 @@ import {
   Settings,
   Link,
   RotateCcw,
+  Sparkles,
 } from 'lucide-react';
 
 interface Stage4TeacherPanelProps {
@@ -85,6 +86,7 @@ export const Stage4TeacherPanel: React.FC<Stage4TeacherPanelProps> = ({
   const [showGasSettings, setShowGasSettings] = useState(false);
   const [studentToDelete, setStudentToDelete] = useState<ExamResult | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [infoBanner, setInfoBanner] = useState<string | null>(null);
 
   // Ambil data dari Google Apps Script saat komponen dimuat
   const loadDataFromGAS = async () => {
@@ -108,6 +110,22 @@ export const Stage4TeacherPanel: React.FC<Stage4TeacherPanelProps> = ({
   useEffect(() => {
     loadDataFromGAS();
   }, []);
+
+  // Muat contoh data siswa simulasi (untuk uji coba fitur panel guru)
+  const handleLoadSampleData = () => {
+    const samples = gasService.generateSampleResults();
+    setResults(samples);
+    setInfoBanner(
+      '5 data siswa simulasi kelas 4 SD Negeri 3 Loloan Timur berhasil dimuat. Sekarang Anda dapat mencoba mengunduh Rekap PDF/Excel, melihat detail lembar jawaban, dan menguji seluruh tombol.'
+    );
+  };
+
+  // Bersihkan data simulasi / lokal
+  const handleClearData = () => {
+    gasService.clearAllLocalResults();
+    setResults([]);
+    setInfoBanner('Data hasil tes lokal berhasil dikosongkan.');
+  };
 
   // Handler Hapus Data Siswa
   const handleConfirmDelete = async () => {
@@ -252,28 +270,63 @@ export const Stage4TeacherPanel: React.FC<Stage4TeacherPanelProps> = ({
               <span>Panduan Skrip GAS</span>
             </button>
 
-            {/* Tombol Download Rekap PDF */}
+            {/* Tombol Simulasi Data Contoh untuk Guru */}
+            {results.length === 0 ? (
+              <button
+                id="btn-load-sample-data"
+                onClick={handleLoadSampleData}
+                className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-bold text-amber-950 bg-amber-100 hover:bg-amber-200 rounded-xl transition-colors border border-amber-300 cursor-pointer shadow-xs"
+                title="Isi 5 data siswa simulasi untuk menguji fitur rekap, cetak PDF, dan tabel nilai"
+              >
+                <Sparkles className="w-3.5 h-3.5 text-amber-600" />
+                <span>Isi Contoh Simulasi</span>
+              </button>
+            ) : (
+              <button
+                id="btn-clear-sample-data"
+                onClick={handleClearData}
+                className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-medium text-slate-700 bg-slate-100 hover:bg-rose-50 hover:text-rose-700 hover:border-rose-200 rounded-xl transition-colors border border-slate-300 cursor-pointer"
+                title="Kosongkan data tes lokal"
+              >
+                <RotateCcw className="w-3.5 h-3.5 text-slate-500" />
+                <span>Kosongkan Data</span>
+              </button>
+            )}
+
+            {/* Tombol Download Rekap PDF - Selalu Aktif */}
             <button
               id="btn-export-rekap-pdf"
-              onClick={() =>
-                downloadResultsRecapPDF(
-                  filteredAndSortedResults.length > 0 ? filteredAndSortedResults : results
-                )
-              }
-              disabled={results.length === 0}
-              className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-bold text-white bg-rose-600 hover:bg-rose-700 rounded-xl transition-colors shadow-xs disabled:opacity-50 cursor-pointer"
+              onClick={() => {
+                const dataToExport =
+                  filteredAndSortedResults.length > 0 ? filteredAndSortedResults : results;
+                downloadResultsRecapPDF(dataToExport);
+                if (results.length === 0) {
+                  setInfoBanner(
+                    'Mengunduh Blank Template Rekapitulasi Nilai Resmi SD Negeri 3 Loloan Timur. (Data masih kosong karena belum ada siswa submit. Anda dapat mengklik "Isi Contoh Simulasi" untuk menguji data terisi).'
+                  );
+                }
+              }}
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-bold text-white bg-rose-600 hover:bg-rose-700 active:bg-rose-800 rounded-xl transition-colors shadow-xs cursor-pointer"
               title="Unduh Rekapitulasi Nilai Siswa dalam format PDF Resmi"
             >
               <FileDown className="w-3.5 h-3.5 text-white" />
               <span>Download Rekap (PDF)</span>
             </button>
 
-            {/* Tombol Download Rekap File CSV */}
+            {/* Tombol Download Rekap File CSV - Selalu Aktif */}
             <button
               id="btn-export-rekap-csv"
-              onClick={() => exportResultsToCSV(results)}
-              disabled={results.length === 0}
-              className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-bold text-slate-800 bg-emerald-50 hover:bg-emerald-100 rounded-xl transition-colors border border-emerald-300 disabled:opacity-50 cursor-pointer"
+              onClick={() => {
+                const dataToExport =
+                  filteredAndSortedResults.length > 0 ? filteredAndSortedResults : results;
+                exportResultsToCSV(dataToExport);
+                if (results.length === 0) {
+                  setInfoBanner(
+                    'Mengunduh File Excel/CSV Rekap Nilai Resmi. Format header kolom siap digunakan.'
+                  );
+                }
+              }}
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-bold text-slate-800 bg-emerald-50 hover:bg-emerald-100 active:bg-emerald-200 rounded-xl transition-colors border border-emerald-300 cursor-pointer"
               title="Unduh Rekap Hasil Tes dalam format CSV (Excel)"
             >
               <FileSpreadsheet className="w-3.5 h-3.5 text-emerald-700" />
@@ -293,7 +346,24 @@ export const Stage4TeacherPanel: React.FC<Stage4TeacherPanelProps> = ({
           </div>
         </div>
 
-        {/* Toggle Otorisasi Pembahasan Soal untuk Siswa */}
+        {/* Info Banner Interaktif */}
+        {infoBanner && (
+          <div className="mt-4 p-3.5 rounded-xl bg-blue-50 border border-blue-200 text-blue-900 text-xs flex items-center justify-between gap-3 animate-in fade-in duration-200">
+            <div className="flex items-center gap-2">
+              <Sparkles className="w-4 h-4 text-blue-600 shrink-0" />
+              <span>{infoBanner}</span>
+            </div>
+            <button
+              type="button"
+              onClick={() => setInfoBanner(null)}
+              className="text-xs font-bold text-blue-700 hover:text-blue-900 cursor-pointer"
+            >
+              ✕ Tutup
+            </button>
+          </div>
+        )}
+
+      {/* Toggle Otorisasi Pembahasan Soal untuk Siswa */}
         <div className="mt-4 pt-4 border-t border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs">
           <div className="flex items-center gap-2">
             <span className="font-bold text-slate-700">Akses Kunci &amp; Pembahasan Siswa:</span>
@@ -432,7 +502,7 @@ export const Stage4TeacherPanel: React.FC<Stage4TeacherPanelProps> = ({
                 className="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none font-medium"
               >
                 <option value="Semua">Semua Kelas</option>
-                <option value="VI">Kelas VI</option>
+                <option value={CONFIG.KELAS}>Kelas {CONFIG.KELAS}</option>
               </select>
             </div>
 
@@ -508,13 +578,17 @@ export const Stage4TeacherPanel: React.FC<Stage4TeacherPanelProps> = ({
               <button
                 type="button"
                 id="btn-quick-export-pdf"
-                onClick={() =>
-                  downloadResultsRecapPDF(
-                    filteredAndSortedResults.length > 0 ? filteredAndSortedResults : results
-                  )
-                }
-                disabled={results.length === 0}
-                className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-1.5 px-3.5 py-1.5 text-xs font-bold text-rose-700 bg-rose-50 hover:bg-rose-100 border border-rose-200 rounded-lg transition-colors disabled:opacity-50 cursor-pointer shadow-2xs"
+                onClick={() => {
+                  const dataToExport =
+                    filteredAndSortedResults.length > 0 ? filteredAndSortedResults : results;
+                  downloadResultsRecapPDF(dataToExport);
+                  if (results.length === 0) {
+                    setInfoBanner(
+                      'Mengunduh Blank Template Rekapitulasi Nilai Resmi SD Negeri 3 Loloan Timur. (Tabel masih kosong karena belum ada siswa submit).'
+                    );
+                  }
+                }}
+                className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-1.5 px-3.5 py-1.5 text-xs font-bold text-rose-700 bg-rose-50 hover:bg-rose-100 active:bg-rose-200 border border-rose-200 rounded-lg transition-colors cursor-pointer shadow-2xs"
                 title="Download Rekap Nilai Siswa (PDF Resmi Berkop)"
               >
                 <FileDown className="w-3.5 h-3.5 text-rose-600" />
@@ -524,13 +598,15 @@ export const Stage4TeacherPanel: React.FC<Stage4TeacherPanelProps> = ({
               <button
                 type="button"
                 id="btn-quick-export-csv"
-                onClick={() =>
-                  exportResultsToCSV(
-                    filteredAndSortedResults.length > 0 ? filteredAndSortedResults : results
-                  )
-                }
-                disabled={results.length === 0}
-                className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-1.5 px-3.5 py-1.5 text-xs font-bold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 rounded-lg transition-colors disabled:opacity-50 cursor-pointer shadow-2xs"
+                onClick={() => {
+                  const dataToExport =
+                    filteredAndSortedResults.length > 0 ? filteredAndSortedResults : results;
+                  exportResultsToCSV(dataToExport);
+                  if (results.length === 0) {
+                    setInfoBanner('Mengunduh File Excel/CSV Rekap Nilai Resmi.');
+                  }
+                }}
+                className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-1.5 px-3.5 py-1.5 text-xs font-bold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 active:bg-emerald-200 border border-emerald-200 rounded-lg transition-colors cursor-pointer shadow-2xs"
                 title="Download Rekap Nilai Excel/CSV"
               >
                 <FileSpreadsheet className="w-3.5 h-3.5 text-emerald-600" />
@@ -612,6 +688,18 @@ export const Stage4TeacherPanel: React.FC<Stage4TeacherPanelProps> = ({
                             ? 'Data dari siswa akan otomatis tercatat di sini setelah pengerjaan tes sumatif selesai.'
                             : 'Silakan sesuaikan kata kunci pencarian atau filter Anda.'}
                         </p>
+                        {results.length === 0 && (
+                          <div className="pt-3">
+                            <button
+                              type="button"
+                              onClick={handleLoadSampleData}
+                              className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-bold text-amber-950 bg-amber-100 hover:bg-amber-200 rounded-xl border border-amber-300 transition-all cursor-pointer shadow-xs"
+                            >
+                              <Sparkles className="w-3.5 h-3.5 text-amber-600" />
+                              <span>Muat 5 Data Siswa Contoh (Simulasi)</span>
+                            </button>
+                          </div>
+                        )}
                       </div>
                     </td>
                   </tr>

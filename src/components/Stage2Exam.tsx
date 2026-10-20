@@ -24,6 +24,7 @@ import {
   User,
   Check,
   RefreshCw,
+  ArrowRight,
 } from 'lucide-react';
 
 interface Stage2ExamProps {
@@ -738,6 +739,29 @@ export const Stage2Exam: React.FC<Stage2ExamProps> = ({
               >
                 Batal / Kembali ke Soal
               </button>
+
+              {!allAnswered && (
+                <button
+                  id="btn-goto-unanswered"
+                  type="button"
+                  onClick={() => {
+                    const firstUnansweredIndex = shuffledQuestions.findIndex(
+                      (_, idx) => !isQuestionAnswered(idx)
+                    );
+                    if (firstUnansweredIndex >= 0) {
+                      setCurrentIndex(firstUnansweredIndex);
+                    }
+                    setShowConfirmModal(false);
+                  }}
+                  className="px-4 py-2.5 text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-xl transition-colors shadow-xs flex items-center gap-1.5 cursor-pointer"
+                >
+                  <ArrowRight className="w-4 h-4" />
+                  <span>
+                    Kerjakan Soal No.{' '}
+                    {shuffledQuestions.findIndex((_, idx) => !isQuestionAnswered(idx)) + 1}
+                  </span>
+                </button>
+              )}
 
               {allAnswered && (
                 <button

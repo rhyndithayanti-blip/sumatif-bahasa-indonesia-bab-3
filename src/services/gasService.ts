@@ -120,6 +120,93 @@ export const gasService = {
   },
 
   /**
+   * Menghapus seluruh data hasil tes lokal (untuk reset)
+   */
+  clearAllLocalResults(): void {
+    try {
+      localStorage.removeItem(STORAGE_LOCAL_RESULTS_KEY);
+    } catch (e) {
+      console.warn('Gagal membersihkan data lokal:', e);
+    }
+  },
+
+  /**
+   * Menghasilkan data simulasi siswa untuk uji coba panel guru & ekspor rekap
+   */
+  generateSampleResults(): ExamResult[] {
+    const now = new Date();
+    const dateStr = now.toLocaleDateString('id-ID', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+    });
+    const samples: ExamResult[] = [
+      {
+        id: `sample-1`,
+        timestamp: `${dateStr} 08:35:12`,
+        nama: 'I Putu Agus Pratama',
+        noAbsen: '01',
+        kelas: CONFIG.KELAS,
+        benar: 28,
+        salah: 2,
+        nilai: 93,
+        status: 'Lulus',
+      },
+      {
+        id: `sample-2`,
+        timestamp: `${dateStr} 08:42:05`,
+        nama: 'Ni Kadek Ayu Lestari',
+        noAbsen: '02',
+        kelas: CONFIG.KELAS,
+        benar: 26,
+        salah: 4,
+        nilai: 87,
+        status: 'Lulus',
+      },
+      {
+        id: `sample-3`,
+        timestamp: `${dateStr} 08:45:30`,
+        nama: 'I Komang Arya Wijaya',
+        noAbsen: '03',
+        kelas: CONFIG.KELAS,
+        benar: 24,
+        salah: 6,
+        nilai: 80,
+        status: 'Lulus',
+      },
+      {
+        id: `sample-4`,
+        timestamp: `${dateStr} 08:50:18`,
+        nama: 'Ni Ketut Budiartini',
+        noAbsen: '04',
+        kelas: CONFIG.KELAS,
+        benar: 19,
+        salah: 11,
+        nilai: 63,
+        status: 'Lulus',
+      },
+      {
+        id: `sample-5`,
+        timestamp: `${dateStr} 08:55:44`,
+        nama: 'I Made Gede Danendra',
+        noAbsen: '05',
+        kelas: CONFIG.KELAS,
+        benar: 16,
+        salah: 14,
+        nilai: 53,
+        status: 'Belum Lulus',
+      },
+    ];
+
+    try {
+      localStorage.setItem(STORAGE_LOCAL_RESULTS_KEY, JSON.stringify(samples));
+    } catch {
+      // ignore
+    }
+    return samples;
+  },
+
+  /**
    * Menguji koneksi ke URL Google Apps Script
    */
   async testGasConnection(
