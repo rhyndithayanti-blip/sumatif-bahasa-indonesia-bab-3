@@ -1,0 +1,8 @@
+{
+  "name": "sumatif bahasa indonesia bab 3",
+  "description": "Aplikasi Tes Sumatif Bahasa Indonesia Kelas 4 SD Negeri 3 Loloan Timur (Rambu-rambu Lalu Lintas, Teks Argumentasi, Awalan Ber-, Petunjuk Arah, Teks Deskripsi) dengan sinkronisasi Google Spreadsheet, unduh PDF naskah & hasil tes, serta panel guru.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
