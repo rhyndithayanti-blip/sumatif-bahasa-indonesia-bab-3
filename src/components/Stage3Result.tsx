@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import confetti from 'canvas-confetti';
 import { CONFIG } from '../config';
 import { ExamResult, Question } from '../types';
@@ -29,6 +29,7 @@ export const Stage3Result: React.FC<Stage3ResultProps> = ({
   allowReview,
   onRestart,
 }) => {
+  const [downloadSuccess, setDownloadSuccess] = useState(false);
   const isPassed = result.status === 'Lulus' || result.nilai >= CONFIG.KKTP;
 
   useEffect(() => {
@@ -156,13 +157,25 @@ export const Stage3Result: React.FC<Stage3ResultProps> = ({
           </div>
         </div>
 
+        {/* Notifikasi Unduhan Lembar Hasil Siswa */}
+        {downloadSuccess && (
+          <div className="p-3.5 rounded-xl bg-emerald-50 border border-emerald-300 text-emerald-900 text-xs max-w-md mx-auto mb-6 flex items-center justify-center gap-2 animate-in fade-in duration-200">
+            <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+            <span className="font-semibold">Lembar Hasil PDF resmi berhasil diunduh ke perangkat Anda!</span>
+          </div>
+        )}
+
         {/* Tombol Aksi: Download PDF & Tes Baru */}
         <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
           <button
             id="btn-download-result-pdf"
             type="button"
-            onClick={() => downloadStudentResultPDF(result)}
-            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl font-bold text-sm text-white bg-blue-600 hover:bg-blue-700 shadow-md hover:shadow-lg transition-all cursor-pointer"
+            onClick={() => {
+              downloadStudentResultPDF(result);
+              setDownloadSuccess(true);
+              setTimeout(() => setDownloadSuccess(false), 5000);
+            }}
+            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl font-bold text-sm text-white bg-blue-600 hover:bg-blue-700 active:bg-blue-800 shadow-md hover:shadow-lg transition-all cursor-pointer"
           >
             <Download className="w-4 h-4" />
             <span>Unduh Lembar Hasil (PDF)</span>

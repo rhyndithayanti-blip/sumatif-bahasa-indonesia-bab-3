@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { CONFIG } from '../config';
 import { ExamResult } from '../types';
 import { downloadStudentResultPDF } from '../utils/pdfGenerator';
@@ -15,6 +15,7 @@ export const StudentDetailModal: React.FC<StudentDetailModalProps> = ({
   isOpen,
   onClose,
 }) => {
+  const [downloadSuccess, setDownloadSuccess] = useState(false);
   if (!isOpen || !result) return null;
 
   const isPass = result.status === 'Lulus' || result.nilai >= CONFIG.KKTP;
@@ -104,16 +105,30 @@ export const StudentDetailModal: React.FC<StudentDetailModalProps> = ({
           </div>
         </div>
 
+        {/* Pesan Sukses Unduh */}
+        {downloadSuccess && (
+          <div className="mb-3 p-2.5 rounded-lg bg-emerald-50 border border-emerald-300 text-emerald-900 text-xs flex items-center gap-2 animate-in fade-in duration-150">
+            <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+            <span className="font-semibold">Lembar Hasil PDF berhasil diunduh!</span>
+          </div>
+        )}
+
         {/* Footer Actions */}
         <div className="pt-3 border-t border-slate-100 flex items-center justify-between gap-2">
           <button
-            onClick={() => downloadStudentResultPDF(result)}
-            className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-xl transition-colors shadow-xs cursor-pointer"
+            type="button"
+            onClick={() => {
+              downloadStudentResultPDF(result);
+              setDownloadSuccess(true);
+              setTimeout(() => setDownloadSuccess(false), 4000);
+            }}
+            className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 active:bg-blue-800 rounded-xl transition-all shadow-xs cursor-pointer"
           >
             <Download className="w-3.5 h-3.5" />
             <span>Download Lembar Hasil (PDF)</span>
           </button>
           <button
+            type="button"
             onClick={onClose}
             className="px-4 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-100 rounded-xl transition-colors cursor-pointer"
           >

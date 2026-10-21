@@ -387,19 +387,29 @@ export function downloadExamQuestionsPDF(questions: Question[]): void {
  * 3. Export Rekap Nilai ke Format CSV (Bisa dibuka langsung di Microsoft Excel)
  */
 export function exportResultsToCSV(results: ExamResult[]): void {
-  const headers = ['Timestamp', 'Nama Siswa', 'Kelas', 'Nomor Absen', 'Tanggal Lahir', 'Benar', 'Salah', 'Nilai', 'Status'];
+  const headers = ['No', 'Timestamp', 'Nama Siswa', 'Kelas', 'Nomor Absen', 'Tanggal Lahir', 'Benar', 'Salah', 'Nilai', 'Status'];
 
-  const rows = results.map((r) => [
-    `"${r.timestamp || ''}"`,
-    `"${r.nama || ''}"`,
-    `"${r.kelas || CONFIG.KELAS}"`,
-    `"${r.noAbsen || ''}"`,
-    `"${r.tglLahir || ''}"`,
-    r.benar,
-    r.salah,
-    r.nilai,
-    `"${r.status}"`,
-  ]);
+  let rows: (string | number)[][] = [];
+
+  if (results.length === 0) {
+    rows = [
+      [1, '"Contoh: 2026-10-20 08:30"', '"Putu Agus Wirawan"', `"${CONFIG.KELAS}"`, '"1"', '"15/05/2014"', 30, 5, 85, '"Lulus"'],
+      [2, '"Contoh: 2026-10-20 08:32"', '"Ni Kadek Ayu Lestari"', `"${CONFIG.KELAS}"`, '"2"', '"22/08/2014"', 32, 3, 91, '"Lulus"'],
+    ];
+  } else {
+    rows = results.map((r, idx) => [
+      idx + 1,
+      `"${r.timestamp || ''}"`,
+      `"${r.nama || ''}"`,
+      `"${r.kelas || CONFIG.KELAS}"`,
+      `"${r.noAbsen || ''}"`,
+      `"${r.tglLahir || ''}"`,
+      r.benar,
+      r.salah,
+      r.nilai,
+      `"${r.status}"`,
+    ]);
+  }
 
   const csvContent = '\uFEFF' + [headers.join(','), ...rows.map((e) => e.join(','))].join('\n');
   const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });

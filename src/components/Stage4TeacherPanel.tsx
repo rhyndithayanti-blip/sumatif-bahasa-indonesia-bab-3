@@ -8,6 +8,7 @@ import {
   downloadResultsRecapPDF,
   exportResultsToCSV,
 } from '../utils/pdfGenerator';
+import { exportResultsToExcel } from '../utils/excelGenerator';
 import { QuestionEditorModal } from './QuestionEditorModal';
 import { GasGuideModal } from './GasGuideModal';
 import { GasSettingsModal } from './GasSettingsModal';
@@ -125,6 +126,66 @@ export const Stage4TeacherPanel: React.FC<Stage4TeacherPanelProps> = ({
     gasService.clearAllLocalResults();
     setResults([]);
     setInfoBanner('Data hasil tes lokal berhasil dikosongkan.');
+  };
+
+  // State toast notifikasi unduhan
+  const [downloadNotification, setDownloadNotification] = useState<{
+    type: 'excel' | 'pdf' | 'csv';
+    title: string;
+    message: string;
+  } | null>(null);
+
+  // Download Rekap PDF Resmi
+  const handleDownloadPDF = () => {
+    const dataToExport =
+      filteredAndSortedResults.length > 0 ? filteredAndSortedResults : results;
+    downloadResultsRecapPDF(dataToExport);
+    setDownloadNotification({
+      type: 'pdf',
+      title: 'Rekap Nilai PDF Berhasil Diunduh!',
+      message:
+        dataToExport.length > 0
+          ? `File PDF resmi memuat ${dataToExport.length} data siswa SD Negeri 3 Loloan Timur lengkap dengan kop dinas dan tanda tangan.`
+          : 'File PDF Template Blank Resmi SD Negeri 3 Loloan Timur berhasil diunduh.',
+    });
+    setTimeout(() => {
+      setDownloadNotification(null);
+    }, 6000);
+  };
+
+  // Download Rekap Microsoft Excel (.xlsx) Asli
+  const handleDownloadExcel = () => {
+    const dataToExport =
+      filteredAndSortedResults.length > 0 ? filteredAndSortedResults : results;
+    const success = exportResultsToExcel(dataToExport);
+    if (success) {
+      setDownloadNotification({
+        type: 'excel',
+        title: 'Rekap Nilai Microsoft Excel (.xlsx) Berhasil Diunduh!',
+        message:
+          dataToExport.length > 0
+            ? `File Excel (.xlsx) resmi memuat ${dataToExport.length} data siswa lengkap dengan rumus, kop dinas, dan format tabel nilai.`
+            : 'Template Microsoft Excel (.xlsx) resmi SD Negeri 3 Loloan Timur berhasil diunduh siap pakai.',
+      });
+      setTimeout(() => {
+        setDownloadNotification(null);
+      }, 6000);
+    }
+  };
+
+  // Download Rekap CSV
+  const handleDownloadCSV = () => {
+    const dataToExport =
+      filteredAndSortedResults.length > 0 ? filteredAndSortedResults : results;
+    exportResultsToCSV(dataToExport);
+    setDownloadNotification({
+      type: 'csv',
+      title: 'File CSV Berhasil Diunduh!',
+      message: `File CSV memuat ${dataToExport.length} data siswa berhasil disimpan ke perangkat Anda.`,
+    });
+    setTimeout(() => {
+      setDownloadNotification(null);
+    }, 6000);
   };
 
   // Handler Hapus Data Siswa
@@ -296,55 +357,78 @@ export const Stage4TeacherPanel: React.FC<Stage4TeacherPanelProps> = ({
             {/* Tombol Download Rekap PDF - Selalu Aktif */}
             <button
               id="btn-export-rekap-pdf"
-              onClick={() => {
-                const dataToExport =
-                  filteredAndSortedResults.length > 0 ? filteredAndSortedResults : results;
-                downloadResultsRecapPDF(dataToExport);
-                if (results.length === 0) {
-                  setInfoBanner(
-                    'Mengunduh Blank Template Rekapitulasi Nilai Resmi SD Negeri 3 Loloan Timur. (Data masih kosong karena belum ada siswa submit. Anda dapat mengklik "Isi Contoh Simulasi" untuk menguji data terisi).'
-                  );
-                }
-              }}
-              className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-bold text-white bg-rose-600 hover:bg-rose-700 active:bg-rose-800 rounded-xl transition-colors shadow-xs cursor-pointer"
-              title="Unduh Rekapitulasi Nilai Siswa dalam format PDF Resmi"
+              type="button"
+              onClick={handleDownloadPDF}
+              className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-bold text-white bg-red-600 hover:bg-red-700 active:bg-red-800 rounded-xl transition-all shadow-sm cursor-pointer"
+              title="Unduh Rekapitulasi Nilai Siswa dalam format PDF Resmi Berkop & Bertanda Tangan"
             >
-              <FileDown className="w-3.5 h-3.5 text-white" />
+              <FileDown className="w-4 h-4 text-white" />
               <span>Download Rekap (PDF)</span>
             </button>
 
-            {/* Tombol Download Rekap File CSV - Selalu Aktif */}
+            {/* Tombol Download Rekap Excel (.xlsx Asli) - Selalu Aktif */}
+            <button
+              id="btn-export-rekap-excel"
+              type="button"
+              onClick={handleDownloadExcel}
+              className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 rounded-xl transition-all shadow-sm cursor-pointer"
+              title="Unduh Rekap Nilai Siswa dalam format Microsoft Excel (.xlsx Asli)"
+            >
+              <FileSpreadsheet className="w-4 h-4 text-white" />
+              <span>Download Rekap (Excel .xlsx)</span>
+            </button>
+
+            {/* Tombol Download Rekap CSV */}
             <button
               id="btn-export-rekap-csv"
-              onClick={() => {
-                const dataToExport =
-                  filteredAndSortedResults.length > 0 ? filteredAndSortedResults : results;
-                exportResultsToCSV(dataToExport);
-                if (results.length === 0) {
-                  setInfoBanner(
-                    'Mengunduh File Excel/CSV Rekap Nilai Resmi. Format header kolom siap digunakan.'
-                  );
-                }
-              }}
-              className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-bold text-slate-800 bg-emerald-50 hover:bg-emerald-100 active:bg-emerald-200 rounded-xl transition-colors border border-emerald-300 cursor-pointer"
-              title="Unduh Rekap Hasil Tes dalam format CSV (Excel)"
+              type="button"
+              onClick={handleDownloadCSV}
+              className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 active:bg-slate-300 rounded-xl transition-all border border-slate-300 cursor-pointer"
+              title="Unduh Rekap dalam format data CSV"
             >
-              <FileSpreadsheet className="w-3.5 h-3.5 text-emerald-700" />
-              <span>Download Rekap (Excel/CSV)</span>
+              <Download className="w-3.5 h-3.5 text-slate-600" />
+              <span>CSV</span>
             </button>
 
             {/* Tombol Refresh Data */}
             <button
               id="btn-refresh-data-top"
+              type="button"
               onClick={loadDataFromGAS}
               disabled={isLoading}
-              className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-xl transition-colors shadow-xs disabled:opacity-50 cursor-pointer"
+              className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-xl transition-colors shadow-sm disabled:opacity-50 cursor-pointer"
             >
               <RefreshCw className={`w-3.5 h-3.5 ${isLoading ? 'animate-spin' : ''}`} />
               <span>REFRESH DATA</span>
             </button>
           </div>
         </div>
+
+        {/* Notifikasi Toast Berhasil Unduh File */}
+        {downloadNotification && (
+          <div className="mt-4 p-4 rounded-xl bg-emerald-50 border-2 border-emerald-500 text-emerald-950 text-xs flex items-start justify-between gap-3 shadow-md animate-in fade-in slide-in-from-top-2 duration-200">
+            <div className="flex items-start gap-3">
+              <div className="w-8 h-8 rounded-lg bg-emerald-600 text-white flex items-center justify-center shrink-0 mt-0.5">
+                <CheckCircle2 className="w-5 h-5" />
+              </div>
+              <div>
+                <h4 className="font-extrabold text-sm text-emerald-900">
+                  {downloadNotification.title}
+                </h4>
+                <p className="mt-0.5 text-emerald-800 font-medium">
+                  {downloadNotification.message}
+                </p>
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={() => setDownloadNotification(null)}
+              className="px-2 py-1 text-xs font-bold text-emerald-800 hover:text-emerald-950 bg-emerald-200/60 hover:bg-emerald-200 rounded-lg cursor-pointer"
+            >
+              ✕ Tutup
+            </button>
+          </div>
+        )}
 
         {/* Info Banner Interaktif */}
         {infoBanner && (
@@ -574,43 +658,38 @@ export const Stage4TeacherPanel: React.FC<Stage4TeacherPanelProps> = ({
               </span>
             </div>
 
-            <div className="flex items-center gap-2 w-full sm:w-auto">
+            <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
               <button
                 type="button"
                 id="btn-quick-export-pdf"
-                onClick={() => {
-                  const dataToExport =
-                    filteredAndSortedResults.length > 0 ? filteredAndSortedResults : results;
-                  downloadResultsRecapPDF(dataToExport);
-                  if (results.length === 0) {
-                    setInfoBanner(
-                      'Mengunduh Blank Template Rekapitulasi Nilai Resmi SD Negeri 3 Loloan Timur. (Tabel masih kosong karena belum ada siswa submit).'
-                    );
-                  }
-                }}
-                className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-1.5 px-3.5 py-1.5 text-xs font-bold text-rose-700 bg-rose-50 hover:bg-rose-100 active:bg-rose-200 border border-rose-200 rounded-lg transition-colors cursor-pointer shadow-2xs"
+                onClick={handleDownloadPDF}
+                className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-1.5 px-3.5 py-1.5 text-xs font-bold text-white bg-red-600 hover:bg-red-700 active:bg-red-800 rounded-lg transition-all cursor-pointer shadow-xs"
                 title="Download Rekap Nilai Siswa (PDF Resmi Berkop)"
               >
-                <FileDown className="w-3.5 h-3.5 text-rose-600" />
+                <FileDown className="w-3.5 h-3.5 text-white" />
                 <span>Unduh Rekap PDF ({filteredAndSortedResults.length})</span>
               </button>
 
               <button
                 type="button"
-                id="btn-quick-export-csv"
-                onClick={() => {
-                  const dataToExport =
-                    filteredAndSortedResults.length > 0 ? filteredAndSortedResults : results;
-                  exportResultsToCSV(dataToExport);
-                  if (results.length === 0) {
-                    setInfoBanner('Mengunduh File Excel/CSV Rekap Nilai Resmi.');
-                  }
-                }}
-                className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-1.5 px-3.5 py-1.5 text-xs font-bold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 active:bg-emerald-200 border border-emerald-200 rounded-lg transition-colors cursor-pointer shadow-2xs"
-                title="Download Rekap Nilai Excel/CSV"
+                id="btn-quick-export-excel"
+                onClick={handleDownloadExcel}
+                className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-1.5 px-3.5 py-1.5 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 rounded-lg transition-all cursor-pointer shadow-xs"
+                title="Download Rekap Nilai Microsoft Excel (.xlsx Asli)"
               >
-                <FileSpreadsheet className="w-3.5 h-3.5 text-emerald-600" />
-                <span>Unduh Excel/CSV</span>
+                <FileSpreadsheet className="w-3.5 h-3.5 text-white" />
+                <span>Unduh Excel (.xlsx)</span>
+              </button>
+
+              <button
+                type="button"
+                id="btn-quick-export-csv"
+                onClick={handleDownloadCSV}
+                className="inline-flex items-center justify-center gap-1 px-2.5 py-1.5 text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 border border-slate-300 rounded-lg transition-colors cursor-pointer"
+                title="Download Rekap format CSV"
+              >
+                <Download className="w-3.5 h-3.5 text-slate-600" />
+                <span>CSV</span>
               </button>
             </div>
           </div>
@@ -677,7 +756,7 @@ export const Stage4TeacherPanel: React.FC<Stage4TeacherPanelProps> = ({
                 ) : paginatedResults.length === 0 ? (
                   <tr>
                     <td colSpan={10} className="py-12 text-center text-slate-500">
-                      <div className="max-w-xs mx-auto space-y-1">
+                      <div className="max-w-md mx-auto space-y-2">
                         <p className="font-semibold text-slate-700">
                           {results.length === 0
                             ? 'Belum ada data nilai di Google Spreadsheet.'
@@ -685,18 +764,34 @@ export const Stage4TeacherPanel: React.FC<Stage4TeacherPanelProps> = ({
                         </p>
                         <p className="text-[11px] text-slate-400">
                           {results.length === 0
-                            ? 'Data dari siswa akan otomatis tercatat di sini setelah pengerjaan tes sumatif selesai.'
+                            ? 'Data dari siswa akan otomatis tercatat di sini setelah pengerjaan tes sumatif selesai. Anda juga dapat langsung mengunduh template atau memuat contoh data.'
                             : 'Silakan sesuaikan kata kunci pencarian atau filter Anda.'}
                         </p>
                         {results.length === 0 && (
-                          <div className="pt-3">
+                          <div className="pt-3 flex flex-wrap items-center justify-center gap-2">
                             <button
                               type="button"
                               onClick={handleLoadSampleData}
                               className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-bold text-amber-950 bg-amber-100 hover:bg-amber-200 rounded-xl border border-amber-300 transition-all cursor-pointer shadow-xs"
                             >
                               <Sparkles className="w-3.5 h-3.5 text-amber-600" />
-                              <span>Muat 5 Data Siswa Contoh (Simulasi)</span>
+                              <span>Muat 5 Siswa Simulasi</span>
+                            </button>
+                            <button
+                              type="button"
+                              onClick={handleDownloadExcel}
+                              className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-xl transition-all cursor-pointer shadow-xs"
+                            >
+                              <FileSpreadsheet className="w-3.5 h-3.5 text-white" />
+                              <span>Unduh Template Excel</span>
+                            </button>
+                            <button
+                              type="button"
+                              onClick={handleDownloadPDF}
+                              className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-bold text-white bg-red-600 hover:bg-red-700 rounded-xl transition-all cursor-pointer shadow-xs"
+                            >
+                              <FileDown className="w-3.5 h-3.5 text-white" />
+                              <span>Unduh Template PDF</span>
                             </button>
                           </div>
                         )}
@@ -771,8 +866,16 @@ export const Stage4TeacherPanel: React.FC<Stage4TeacherPanelProps> = ({
                             {/* Download PDF Hasil Siswa */}
                             <button
                               id={`btn-download-pdf-${idx}`}
-                              onClick={() => downloadStudentResultPDF(row)}
-                              className="p-1.5 text-emerald-600 hover:text-emerald-800 hover:bg-emerald-50 rounded-lg transition-colors cursor-pointer"
+                              onClick={() => {
+                                downloadStudentResultPDF(row);
+                                setDownloadNotification({
+                                  type: 'pdf',
+                                  title: `Lembar Hasil ${row.nama} Berhasil Diunduh!`,
+                                  message: `Lembar hasil resmi siswa ${row.nama} (Absen ${row.noAbsen}) berhasil dibuat.`,
+                                });
+                                setTimeout(() => setDownloadNotification(null), 5000);
+                              }}
+                              className="p-1.5 text-emerald-700 hover:text-emerald-900 hover:bg-emerald-100 rounded-lg transition-colors cursor-pointer"
                               title="Download PDF Lembar Hasil (TTD Guru & Ortu)"
                             >
                               <Download className="w-4 h-4" />
@@ -864,10 +967,21 @@ export const Stage4TeacherPanel: React.FC<Stage4TeacherPanelProps> = ({
                 </button>
               )}
               <button
-                onClick={() => downloadExamQuestionsPDF(questions)}
-                className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-bold text-slate-800 bg-slate-100 hover:bg-slate-200 rounded-xl transition-colors border border-slate-300 cursor-pointer"
+                id="btn-download-naskah-soal"
+                type="button"
+                onClick={() => {
+                  downloadExamQuestionsPDF(questions);
+                  setDownloadNotification({
+                    type: 'pdf',
+                    title: 'Naskah Soal PDF Berhasil Diunduh!',
+                    message: `Naskah 35 butir soal (${CONFIG.MATA_PELAJARAN} Kelas ${CONFIG.KELAS}) lengkap dengan kop sekolah dan petunjuk ujian berhasil diunduh.`,
+                  });
+                  setTimeout(() => setDownloadNotification(null), 5000);
+                }}
+                className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 active:bg-blue-800 rounded-xl transition-all shadow-sm cursor-pointer"
+                title="Unduh seluruh naskah 35 butir soal dalam format PDF Resmi"
               >
-                <Download className="w-3.5 h-3.5" />
+                <Download className="w-4 h-4 text-white" />
                 <span>Unduh Naskah Soal (PDF)</span>
               </button>
             </div>
